@@ -1,26 +1,20 @@
+import  { ChangeEvent, FormEvent, useState } from "react";
 
-import  { useState, FormEvent, ChangeEvent } from "react";
+type InputProps = {
+  onSendMessage: (text: string) => void;
+};
 
-interface Props {
-  onSendMessage: (message: string) => void;
-  scaledrone: any;
-}
-
-function Input({onSendMessage, scaledrone}: Props) {
+const Input = ({ onSendMessage }:InputProps) => {
   const [text, setText] = useState("");
 
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (scaledrone && scaledrone.connected) {
-    onSendMessage(text);
-    setText("");
-  } else {
-      console.log("Niste povezani na Scaledrone.");
-    }
+  const onChange = (e:ChangeEvent<HTMLInputElement>) => {
+    setText(e.target.value);
   };
 
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setText(e.target.value);
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setText("");
+    onSendMessage(text);
   };
 
   return (
@@ -31,12 +25,12 @@ function Input({onSendMessage, scaledrone}: Props) {
           value={text}
           type="text"
           placeholder="Enter your message and press ENTER"
-          autoFocus
+          autoFocus={true}
         />
         <button>Send</button>
       </form>
     </div>
   );
-}
+};
 
 export default Input;

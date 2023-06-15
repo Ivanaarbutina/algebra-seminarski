@@ -1,9 +1,7 @@
-import React from "react";
-import "./../styles/style.scss"
 
 interface Message {
   member: {
-    id: string;
+    id: number;
     clientData: {
       color: string;
       username: string;
@@ -12,39 +10,38 @@ interface Message {
   text: string;
 }
 
-interface Props {
+interface MessagesProps {
   messages: Message[];
   currentMember: {
-    id: string;
-    clientData: {
-      color: string;
-      username: string;
-    };
+    id: number;
   };
 }
 
-const Messages: React.FC<Props> = ({ messages, currentMember }) => {
+const Messages = ({ messages, currentMember }:MessagesProps) => {
+  const renderMessage = (message:Message) => {
+    const { member, text } = message;
+    const messageFromMe = member.id === currentMember.id;
+    const className = messageFromMe
+      ? "Messages-message currentMember"
+      : "Messages-message";
+
+    return (
+      <li className={className}>
+        <span
+          className="avatar"
+          style={{ backgroundColor: member.clientData.color }}
+        />
+        <div className="Message-content">
+          <div className="username">{member.clientData.username}</div>
+          <div className="text">{text}</div>
+        </div>
+      </li>
+    );
+  };
+
   return (
     <ul className="Messages-list">
-      {messages.map((message, index) => {
-        const { member, text } = message;
-        const messageFromMe = member.id === currentMember.id;
-        const className = messageFromMe
-          ? "Messages-message currentMember"
-          : "Messages-message";
-        return (
-          <li key={index} className={className}>
-            <span
-              className="avatar"
-              style={{ backgroundColor: member.clientData.color }}
-            />
-            <div className="Message-content">
-              <div className="username">{member.clientData.username}</div>
-              <div className="text">{text}</div>
-            </div>
-          </li>
-        );
-      })}
+      {messages.map((message) => renderMessage(message))}
     </ul>
   );
 };

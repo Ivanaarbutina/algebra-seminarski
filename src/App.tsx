@@ -1,4 +1,9 @@
-// @ts-nocheck
+declare global {
+  interface Window {
+    Scaledrone: any;
+  }
+}
+
 import  { useState, useEffect } from "react";
 import Messages from "./components/messages";
 import Input from "./components/input";
@@ -16,62 +21,60 @@ function randomColor() {
   return '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16);
 }
 
-function App() {
+
+const App = () => {
   const [messages, setMessages] = useState([]);
   const [member, setMember] = useState({
-    id:"",
     username: randomName(),
     color: randomColor(),
+    id: 0,
   });
-  const [scaledrone, setScaledrone] = useState(null);
 
   useEffect(() => {
-    const scaledroneInit = new window.Scaledrone("iYmttdfTvfBbi9jt", {
+    const drone = new window.Scaledrone('iYmttdfTvfBbi9jt', {
       data: member,
     });
 
-    const scaledrone = scaledroneInit;
-
-    scaledroneInit.on("open", (error) => {
+    drone.on('open', (error:any) => {
       if (error) {
         console.error(error);
       } else {
-        const updatedMember = {
-          id: scaledrone.clientId, // Postavite id na clientId
-          clientData: { ...member.clientData } // Očuvajte prethodne podatke
-        };
+        const updatedMember = { ...member };
+        updatedMember.id = drone.clientId;
         setMember(updatedMember);
-        setScaledrone(scaledrone);
       }
     });
 
-    const room = scaledrone.subscribe("observable-room");
-    room.on("data", (data, member) => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { member, text: data },
-      ]);
+    const room = drone.subscribe('observable-room');
+    room.on('data', (data:any, member:any) => {
+      setMessages((prevMessages: never[]) => [...prevMessages, { member, text: data }] as never[]);
+
     });
 
+    // Cleanup function
     return () => {
-      scaledrone.close();
+      room.unsubscribe(); // Unsubscribe from the room
+      drone.close(); // Close the connection
     };
   }, []);
 
-  const onSendMessage = (message) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { member: member, text: message },
-    ]);
+  const onSendMessage = (message:any) => {
+    const drone = new window.Scaledrone('iYmttdfTvfBbi9jt');
+    drone.publish({
+      room: 'observable-room',
+      message,
+    });
   };
 
+  
+  
   return (
     <div className="App">
-      <div className="App-header">
+        <div className="App-header">
         <h1>My Chat App</h1>
       </div>
       <Messages messages={messages} currentMember={member} />
-      <Input onSendMessage={onSendMessage} scaledrone={scaledrone} />
+      <Input onSendMessage={onSendMessage} />
     </div>
   );
 }
