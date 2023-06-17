@@ -1,21 +1,21 @@
 
+interface Member {
+  username: string;
+  color: string;
+  id: string;
+}
+
 interface Message {
-  member: {
-    id: number;
-    clientData: {
-      color: string;
-      username: string;
-    };
-  };
-  text: string;
+  member: Member;
+  text: any;
+  id: any;
 }
 
 interface MessagesProps {
   messages: Message[];
-  currentMember: {
-    id: number;
-  };
+  currentMember: Member;
 }
+
 
 const Messages = ({ messages, currentMember }:MessagesProps) => {
   const renderMessage = (message:Message) => {
@@ -29,10 +29,10 @@ const Messages = ({ messages, currentMember }:MessagesProps) => {
       <li className={className}>
         <span
           className="avatar"
-          style={{ backgroundColor: member.clientData.color }}
-        />
+          style={{ backgroundColor: member.color }}
+        ></span>
         <div className="Message-content">
-          <div className="username">{member.clientData.username}</div>
+          <div className="username">{member.username}</div>
           <div className="text">{text}</div>
         </div>
       </li>
@@ -41,7 +41,7 @@ const Messages = ({ messages, currentMember }:MessagesProps) => {
 
   return (
     <ul className="Messages-list">
-      {messages.map((message) => renderMessage(message))}
+     {messages.map((m) => renderMessage(m))}
     </ul>
   );
 };

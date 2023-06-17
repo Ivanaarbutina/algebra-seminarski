@@ -1,28 +1,32 @@
-import  { ChangeEvent, FormEvent, useState } from "react";
 
-type InputProps = {
+import  {useState } from "react";
+interface InputProps {
   onSendMessage: (text: string) => void;
-};
+}
+const Input =  ({ onSendMessage }:InputProps) => {
+  const initialState = {
+    text: ""
+  };
+  const [state, setState] = useState(initialState);
+  
 
-const Input = ({ onSendMessage }:InputProps) => {
-  const [text, setText] = useState("");
-
-  const onChange = (e:ChangeEvent<HTMLInputElement>) => {
-    setText(e.target.value);
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setState({text:e.target.value});
   };
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setText("");
-    onSendMessage(text);
+    onSendMessage(state.text);
+    setState({text:""});
   };
+
 
   return (
     <div className="Input">
-      <form onSubmit={onSubmit}>
+      <form onSubmit={(e) => onSubmit(e)}>
         <input
-          onChange={onChange}
-          value={text}
+          onChange={(e) => onChange(e)}
+          value={state.text}
           type="text"
           placeholder="Enter your message and press ENTER"
           autoFocus={true}

@@ -1,13 +1,32 @@
+
 declare global {
   interface Window {
     Scaledrone: any;
   }
 }
 
-import  { useState, useEffect } from "react";
+
+import { useState, useEffect } from "react";
 import Messages from "./components/messages";
 import Input from "./components/input";
 import "./styles/style.scss";
+
+interface Member {
+  username: string;
+  color: string;
+  id: string;
+}
+
+interface Message {
+  member: Member;
+  text: any;
+  id: any;
+}
+
+interface ChatState {
+  member: Member;
+  messages: Message[];
+}
 
 function randomName() {
   const adjectives = ["autumn", "hidden", "bitter", "misty", "silent", "empty", "dry", "dark", "summer", "icy", "delicate", "quiet", "white", "cool", "spring", "winter", "patient", "twilight", "dawn", "crimson", "wispy", "weathered", "blue", "billowing", "broken", "cold", "damp", "falling", "frosty", "green", "long", "late", "lingering", "bold", "little", "morning", "muddy", "old", "red", "rough", "still", "small", "sparkling", "throbbing", "shy", "wandering", "withered", "wild", "black", "young", "holy", "solitary", "fragrant", "aged", "snowy", "proud", "floral", "restless", "divine", "polished", "ancient", "purple", "lively", "nameless"];
@@ -21,62 +40,67 @@ function randomColor() {
   return '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16);
 }
 
-
 const App = () => {
-  const [messages, setMessages] = useState([]);
-  const [member, setMember] = useState({
-    username: randomName(),
-    color: randomColor(),
-    id: 0,
-  });
-
-  useEffect(() => {
-    const drone = new window.Scaledrone('iYmttdfTvfBbi9jt', {
-      data: member,
-    });
-
-    drone.on('open', (error:any) => {
-      if (error) {
-        console.error(error);
-      } else {
-        const updatedMember = { ...member };
-        updatedMember.id = drone.clientId;
-        setMember(updatedMember);
-      }
-    });
-
-    const room = drone.subscribe('observable-room');
-    room.on('data', (data:any, member:any) => {
-      setMessages((prevMessages: never[]) => [...prevMessages, { member, text: data }] as never[]);
-
-    });
-
-    // Cleanup function
-    return () => {
-      room.unsubscribe(); // Unsubscribe from the room
-      drone.close(); // Close the connection
-    };
-  }, []);
-
-  const onSendMessage = (message:any) => {
-    const drone = new window.Scaledrone('iYmttdfTvfBbi9jt');
-    drone.publish({
-      room: 'observable-room',
-      message,
-    });
+  const initialChatState: ChatState = {
+    member: { username: randomName(), color: randomColor(),id:"" },
+    messages: [],
   };
 
-  
-  
-  return (
+  const [chat, setChat] = useState(initialChatState);
+  const [drone, setDrone] = useState<any>(null);
+
+  useEffect(() => {
+    const initDrone = () => {
+      const drone = new window.Scaledrone("iYmttdfTvfBbi9jt", {
+        data: chat.member,
+      });
+      drone.on("open", (error: any) => {
+        if (error) {
+          return console.error(error);
+        }
+        const updatedMember = { ...chat.member, id: drone.clientId };
+        setChat({ ...chat, member: updatedMember });
+      });
+      setDrone(drone);
+    };
+    initDrone();
+    },[]);
+    
+    useEffect(() => {
+      if(drone) {
+      const room = drone.subscribe("observable-room");
+      console.log("room:", room);
+      room?.on("message", (messageData: any) => {
+        const { data,member, id } = messageData;
+        const updatedMessages = [...chat.messages, { member, text:data, id }];
+        setChat({ ...chat, messages: updatedMessages });
+      });
+    }
+    }, [drone, chat]);
+      
+    
+
+  const onSendMessage = (message: string) => {
+    if (drone){
+    drone.publish({
+      room: "observable-room",
+      message,
+    });
+   }
+  };
+
+  return  (
     <div className="App">
-        <div className="App-header">
+      <div className="App-header">
         <h1>My Chat App</h1>
       </div>
-      <Messages messages={messages} currentMember={member} />
-      <Input onSendMessage={onSendMessage} />
+
+      <div className="chat">
+        <Messages messages={chat.messages} currentMember={chat.member} />
+        <Input onSendMessage={onSendMessage} />
+      </div>
     </div>
-  );
-}
+  ) 
+};
 
 export default App;
