@@ -71,8 +71,8 @@ const App = () => {
       const room = drone.subscribe("observable-room");
       console.log("room:", room);
       room?.on("message", (messageData: any) => {
-        const { data,member, id } = messageData;
-        const updatedMessages = [...chat.messages, { member, text:data, id }];
+        const { data,member } = messageData;
+        const updatedMessages = [...chat.messages, { member, text:data, id:Math.random() }];
         setChat({ ...chat, messages: updatedMessages });
       });
     }

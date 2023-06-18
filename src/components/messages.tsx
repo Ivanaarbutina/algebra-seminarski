@@ -1,5 +1,6 @@
 
 interface Member {
+  [x: string]: any;
   username: string;
   color: string;
   id: string;
@@ -20,19 +21,19 @@ interface MessagesProps {
 const Messages = ({ messages, currentMember }:MessagesProps) => {
   const renderMessage = (message:Message) => {
     const { member, text } = message;
-    const messageFromMe = member.id === currentMember.id;
+    const messageFromMe =member&& member.id === currentMember.id;
     const className = messageFromMe
       ? "Messages-message currentMember"
       : "Messages-message";
 
     return (
-      <li className={className}>
+      <li  className={className} >
         <span
           className="avatar"
-          style={{ backgroundColor: member.color }}
+          style={{ backgroundColor: member.clientData.color }}
         ></span>
         <div className="Message-content">
-          <div className="username">{member.username}</div>
+          <div className="username">{member.clientData.username}</div>
           <div className="text">{text}</div>
         </div>
       </li>
